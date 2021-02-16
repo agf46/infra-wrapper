@@ -1,0 +1,63 @@
+name: Build Rust binaries 
+
+on: [pull_request]
+
+jobs: 
+  build: 
+    runs-on: ubuntu-latest
+    
+    steps: 
+      - name: Checkout actions 
+        uses: actions/checkout@v2 
+
+      - name: install rust tool chain 
+        uses: actions-rs/toolchain@v1 
+        with: 
+          profile: minimal 
+          toolchain: stable 
+          override: true 
+      
+      - name: Run cargo check 
+        uses: actions-rs/toolchain@v1
+        with: 
+          command: check 
+      
+  lints:
+      name: Lints
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout sources
+          uses: actions/checkout@v2
+
+        - name: Install stable toolchain
+          uses: actions-rs/toolchain@v1
+          with:
+            profile: minimal
+            toolchain: stable
+            override: true
+            components: rustfmt, clippy
+
+        - name: Run cargo fmt
+          uses: actions-rs/cargo@v1
+          with:
+            command: fmt
+            args: --all -- --check
+
+        - name: Run cargo clippy
+          uses: actions-rs/cargo@v1
+          with:
+            command: clippy
+            args: -- -D warnings
+
+  
+# Build for linux: 
+  build-linux:
+      name: Build for linux 
+      runs-on: ubuntu-latest
+
+      steps: 
+        - uses: actions-rs/cargo@v1
+          with:
+            use-cross: true 
+            command: build 
+            args: --release
